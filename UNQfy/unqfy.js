@@ -1,5 +1,10 @@
 /*eslint-disable semi, semi, semi, no-shadow-global, semi, no-shadow-global, no-shadow-global, no-undef, no-undef, no-undef, no-undef, no-undef, semi, semi, unknown-require, no-unused-params, no-unused-params, no-unused-params, no-unused-params*/
 const picklejs = require('picklejs');
+const artist = require('./artist');
+const album = require('./album');
+const track = require('./track');
+const playList = require('./playList');
+
 
 class Artist{
     constructor(aName, aCountry){
@@ -31,7 +36,6 @@ class Artist{
     }
 }
 
-
 class Album{
     constructor(aName, aYear){
         this.name = aName;
@@ -57,10 +61,10 @@ class Album{
 
 
 class Track{
-    constructor(){
-        this.name = "";
-        this.duration = 0;
-        this.genres = [];
+    constructor(name, duration, genres){
+        this.name = name;
+        this.duration = duration;
+        this.genres = genres;
     }
     getName(){
         return this.name;
@@ -85,24 +89,34 @@ class Track{
 }
 
 class PlayList{
-    constructor(){
-        this.name = "";
-        this.duration = 0;
-        this.trackList = [];
+    constructor(aName, aDuration, aTrackList){
+        this.name = aName;
+        this.duration = aDuration;
+        this.trackList = aTrackList;
     }
     
     getName(){
         return this.name;
     }
     
+    setName(aName){
+        this.name = aName;
+    }
+    
     duration(){
         return this.duration;
+    }
+    
+    addTrack(aTrack){
+        this.trackList.push(aTrack);
     }
     
     hasTrack(aTrack){
        return this.trackList.includes(aTrack);
     }
 }
+
+
 class UNQfy {
     constructor(){
         this.artists = [];
@@ -138,16 +152,18 @@ class UNQfy {
   }
 
   addArtist(params) {
-    let aArtist = new Artist("","");
+   /* let aArtist = new Artist("","");
     aArtist.name = params.name;
-    aArtist.country = params.country;
+    aArtist.country = params.country;*/
+    let aArtist = new Artist(params.name, params.country);
     this.artists.push(aArtist);
   }
 
   addAlbum(artistName, params) {
-    let newAlbum = new Album("", 0);
+    /*let newAlbum = new Album("", 0);
     newAlbum.name = params.name;
-    newAlbum.year = params.year;    
+    newAlbum.year = params.year;*/
+    let newAlbum = new Album(params.name, params.year);
     let it = 0;
     while(it < this.artists.length){
         if(this.artists[it].getName() === artistName){
@@ -160,10 +176,11 @@ class UNQfy {
 
   addTrack(albumName, params) {
     let it = 0;
-    let aTrack = new Track();
+    /*let aTrack = new Track();
     aTrack.name = params.name;
     aTrack.duration = params.duration;
-    aTrack.genres = params.genres;
+    aTrack.genres = params.genres;*/
+    let aTrack = new Track(params.name, params.duration, params.genres);
     while(it < this.albums.length){
         if(this.albums[it].getName() === albumName){
             this.albums[it].addTrack(aTrack);
@@ -201,27 +218,37 @@ class UNQfy {
         }
         it++;
     }
+   
   }
 
   getPlaylistByName(name) {
-    let res;
     let it = 0;
     while(it < this.playList.length){
         if (this.playList[it].getName() === name){
-            res = this.playList[it];
+            return this.playList[it];
         }
         it++;
     }
-    return res;
   }
 
-  addPlaylist(name, genresToInclude, maxDuration) {
-    let aPlayList = new PlayList();
-    aPlayList.name = name;
-    aPlayList.duration = maxDuration;
-    aPlayList.trackList = this.getTracksMatchingGenres(genresToInclude);
-    this.playList.push(aPlayList);
-  }
+  addPlaylist(name, genresToInclude, maxDuration) { 
+    let res = [];//la lista de canciones que cumple con la duracion
+
+    let tracksList = this.getTracksMatchingGenres(genresToInclude);//consigo todos los temas del genero
+    let durationAprox = maxDuration;//me cacheo la duracion que deberia tener la playlist
+    it =0;
+    while(it < tracksList.length){//recorro todos los tracks del genero
+        if(tracksList[it].getDuration() <= durationAprox){
+            res.push(tracksList[it]);
+            durationAprox = durationAprox - tracksList[it].getDuration();
+            }
+        it++;
+        }
+        let aPlayList = new PlayList(name, maxDuration - durationAprox, res)
+        this.playList.push(aPlayList);
+}
+        
+
 
   save(filename = 'unqfy.json') {
     new picklejs.FileSerializer().serialize(filename, this);
@@ -238,6 +265,6 @@ class UNQfy {
 
 // TODO: exportar todas las clases que necesiten ser utilizadas desde un modulo cliente
 module.exports = {
-  UNQfy,
+  UNQfy, 
 };
 

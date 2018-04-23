@@ -207,6 +207,7 @@ describe('Playlist Creation and properties', () => {
     
     assert.isAtMost(playlist.duration, 1400);
     
+    
     assert.isTrue(playlist.hasTrack(t1));
     
     assert.isTrue(playlist.hasTrack(t2));

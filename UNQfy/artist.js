@@ -29,3 +29,6 @@ class Artist{
     }
 }
 
+
+// TODO: exportar todas las clases que necesiten ser utilizadas desde un modulo cliente
+module.exports = Artist;
