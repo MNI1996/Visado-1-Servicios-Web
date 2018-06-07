@@ -1,7 +1,8 @@
 
-
 const fs = require('fs'); // necesitado para guardar/cargar unqfy
 const unqmod = require('./unqfy');
+
+
 
 // Retorna una instancia de UNQfy. Si existe filename, recupera la instancia desde el archivo.
 function getUNQfy(filename) {
@@ -219,7 +220,7 @@ function isNotEmpty(array) {
 }
 
 function main() {
-  const unqfy = getUNQfy('estado.json');
+  const unqfy = getUNQfy('backup.json');
   const comando = process.argv[2];
   const args = generarDiccionario(process.argv.slice(3));
 
@@ -274,7 +275,7 @@ function main() {
   case 'listAlbum':
     if(isNotEmpty(unqfy.albums)) {
       console.log('Albums:\n');
-      unqfy.albums.forEach(a => console.log(`Nombre: ${a.name} Año: ${a.year} Artista: ${a.artist.name}`));
+      unqfy.albums.forEach(a => console.log(`Nombre: ${a.name} Año: ${a.year}`));// Artista: ${a.artist.name}`));
     } else {
       console.log('No hay albums registrados.');
     }
@@ -288,7 +289,7 @@ function main() {
     }
     break;
   case 'listPlaylist':
-    if( isNotEmpty(unqfy.playlists)) {
+    if(isNotEmpty(unqfy.playList)) {
       console.log('Playlists:\n');
       unqfy.playlists.forEach(p => console.log(`Nombre: ${p.name}`));
     } else {
@@ -299,7 +300,7 @@ function main() {
     const tracks = unqfy.listTracks();
     if( isNotEmpty(tracks)) {
       console.log(`Tracks (${tracks.length}):\n`);
-      tracks.forEach(t => console.log(`Nombre: ${t.name} Duracion: ${t.duration} Album: ${t.album.name}`));
+      tracks.forEach(t => console.log(`Nombre: ${t.name} Duracion: ${t.duration}`));
     } else {
       console.log('No hay tracks registrados.');
     }
@@ -309,7 +310,7 @@ function main() {
       const album = unqfy.getAlbumByName(a.name);
       if(isNotUndefined(album)) {
         console.log('Tracks:\n');
-        album.tracks.forEach(t => console.log(`${t.name}`));
+        album.trackList.forEach(t => console.log(`${t.name}`));
         return '\n';
       } else {
         return 'Album inexistente.';
@@ -391,7 +392,7 @@ function main() {
     break;
   case 'searchAlbum':
     runCommand(a => {
-      const albums = unqfy.searchAlbumByName(a.name);
+      const albums = [unqfy.getAlbumByName(a.name)];
       if(isNotEmpty(albums)) {
         albums.forEach(a => console.log(`Nombre: ${a.name}`));
         return '\n';
@@ -402,7 +403,7 @@ function main() {
     break;
   case 'searchArtist':
     runCommand(a => {
-      const artists = unqfy.searchArtistByName(a.name);
+      const artists = [unqfy.getArtistByName(a.name)];
       if(isNotEmpty(artists)) {
         artists.forEach(a => console.log(`Nombre: ${a.name}`));
         return '\n';
@@ -413,7 +414,7 @@ function main() {
     break;
   case 'searchPlaylist':
     runCommand(a => {
-      const playlists = unqfy.searchPlaylistByName(a.name);
+      const playlists = [unqfy.getPlaylistByName(a.name)];
       if(isNotEmpty(playlists)) {
         console.log('PlayList: \n');
         playlists.forEach(p => console.log(`Nombre: ${p.name} cantidad de canciones: ${p.tracks.length}`));
@@ -423,9 +424,25 @@ function main() {
       }
     }, ['name'], args);
     break;
+
+    case 'albumsForArtist':
+    runCommand(a => {
+      const albums = [unqfy.getAlbumsForArtist(a.name)];
+      if(isNotEmpty(albums)) {
+        console.log('albums: \n');
+        albums.forEach(a => console.log(`Nombre: ${a.name}`));
+        return '\n';
+      } else {
+        return 'No hay albums para mostrar.';
+      }
+    }, ['name'], args);
+    break;
+    case 'a':
+    runCommand(a => {unqfy.p(a.name)},['name'],args);
+    break;
   case 'searchTrack':
     runCommand(a => {
-      const tracks = unqfy.searchTrackByName(a.name);
+      const tracks = [unqfy.getTrackByName(a.name)];
       if(isNotEmpty(tracks)) {
         tracks.forEach(t => console.log(`Nombre: ${t.name}`));
         return '\n';
@@ -437,7 +454,7 @@ function main() {
   default:
     console.log('error: el comando no es correcto');
   }
-  saveUNQfy(unqfy, 'estado.json');
+  saveUNQfy(unqfy, 'backup.json');
 }
 
 main();
