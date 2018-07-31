@@ -11,7 +11,12 @@ class Artist {
         this.name = aName;
         this.country = aCountry;
         this.albums = [];
+        this.id = "";
     }
+
+    setId(id){this.id = id}
+
+    getId(){return this.id}
 
     getName() {
         return this.name;
@@ -126,6 +131,24 @@ class UNQfy {
         this.albums = [];
         this.tracks = [];
         this.playList = [];
+        this.popularity = 0;
+        this.title = "";
+    }
+
+    setTitle(aName){
+        this.title = aName;
+    }
+
+    getTitle(){
+        return this.title;
+    }
+
+    setPopularity(aPopularity){
+        this.popularity = aPopularity;
+    }
+
+    getPopularity(){
+        return this.popularity;
     }
 
     listTracks() {
@@ -159,17 +182,11 @@ class UNQfy {
     }
 
     addArtist(params) {
-        /* let aArtist = new Artist("","");
-         aArtist.name = params.name;
-         aArtist.country = params.country;*/
         let aArtist = new Artist(params.name, params.country);
         this.artists.push(aArtist);
     }
 
     addAlbum(artistName, params) {
-        /*let newAlbum = new Album("", 0);
-        newAlbum.name = params.name;
-        newAlbum.year = params.year;*/
         let newAlbum = new Album(params.name, params.year);
         let it = 0;
         while (it < this.artists.length) {
@@ -183,10 +200,6 @@ class UNQfy {
 
     addTrack(albumName, params) {
         let it = 0;
-        /*let aTrack = new Track();
-        aTrack.name = params.name;
-        aTrack.duration = params.duration;
-        aTrack.genres = params.genres;*/
         let aTrack = new Track(params.name, params.duration, params.genres);
         while (it < this.albums.length) {
             if (this.albums[it].getName() === albumName) {
@@ -200,7 +213,7 @@ class UNQfy {
     getArtistByName(name) {
         let it = 0;
         while (it < this.artists.length) {
-            if (this.artists[it].getName() === name) {
+            if (this.artists[it].name === name) {
                 return this.artists[it];
             }
             it++;
@@ -279,33 +292,94 @@ class UNQfy {
 
     static load(filename = 'backup.json') {
         const fs = new picklejs.FileSerializer();
-        // TODO: Agregar a la lista todas las clases que necesitan ser instanciadas
         const classes = [UNQfy, Artist, Track, Album];
         fs.registerClasses(...classes);
         return fs.load(filename);
     }
 
-    p(artistName) {
+    populateAlbumsForArtist(artist){
         const rp = require('request-promise');
         const options = {
-            url: 'https://api.spotify.com/v1/search?q=' + artistName + '&type=artist',
-            headers: { Authorization: 'Bearer ' + 'BQBjI6WDMZTLteyCoAs2SnRTXg-PcHULtLX7K5uYWv2wfv5QLvsyiTvV4P0XVvkKHOloeN-MaWIWbDMxoIjRCOMiuX2vbygtkiu5n5FJhRm_fxYOUGkGWirQK6OcvSLiDUc2kcHTYubKtXgj8bOTWdjln5MnHwlT9zptpkjvwDK-qytnug' },
+            url: 'https://api.spotify.com/v1/artists/'+ artist.id +'/albums',
+            headers: { Authorization: 'Bearer ' + 'BQBA7aTvfVDOv3A0K260ukruqityV3kk7e50FWSTEsISH9lR_mg-sMd5bafeF0YVqu0o5cqnqNaQozBXlt03Y3HNx-QGuugUKtVec5rQlZN1F7o0evGtEm4VoXxwFtllP7kDu8d3OVvB6ftbvSprQVus1fnFcJZcgYKLHA9UHEFjx38HSg' },
             json: true,
         };
         rp.get(options).then((respose) => {
-            console.log('en el then');
-            console.log(respose);
-            console.log(respose.artists.items.forEach(element => {
-                console.log(element);
-
-            }
-            )
-
-
-
-            );
+            //respose.items.forEach(a => console.log(new Album(a.name, a.release_date)));
+            respose.items.forEach(a => artist.albums.push(new Album(a.name, a.release_date)));
+            this.save('backup.json');
         }
-        ).catch(error => console.log('en el catch',error) );
+        ).catch(error => console.log(error));
+    }
+
+    getATrackId(trackname){
+        const rp = require('request-promise');
+
+        const BASE_URL = 'http://api.musixmatch.com/ws/1.1';
+        var options = {
+            uri: BASE_URL + '/artist.search',
+            qs: {
+                apikey: 'c7739e9f257c007f477785b9a135fd0b',
+                q_artist: 'Queen',
+                },
+            json: true // Automatically parses the JSON string in the response
+        };
+        rp.get(
+            options
+            ).then((response) => {
+            var header = response.message.header;
+            var body = response.message.body;
+
+            console.log(body.artist_list[0].artist.artist_id)
+
+            if (header.status_code !== 200){
+            console.log('algo salio mal', response);
+            return
+            }
+            var artistNames = body.artist_list.map((artist => artist.artist.artist_name));
+            console.log(`Se econtraron ${artistNames.length} artistas`);
+            console.log(artistNames);
+            
+            }).catch((error) => {
+            console.log('algo salio mal', error);
+            });
+    }
+
+    generateURLTrack(artistName){
+        const rp = require('request-promise');
+        const options = 'https://www.googleapis.com/youtube/v3/search?q='+ artistName +' &key=AIzaSyAbEP3nZoVtZtj4KWM5Bn2HSrIX0XTnVN0&part=id';
+        rp.get(options).then((response) => {
+            const body = JSON.parse(response).items;
+            for(var index in body){
+                if(body[index].id.kind === 'youtube#video'){
+                    console.log('https://www.youtube.com/watch?v='+body[index].id.videoId);
+                }
+            }
+        })
+    }
+
+    getATrackLyrics(track_id){
+        const rp = require('request-promise');
+        const options = {
+            url: 'http://track.lyrics.get?track_id=' + track_id,
+            headers: { Authorization: 'Bearer ' + '' },
+            json: true,
+        };
+        rp.get(options).then((respose) => {console.log(respose);}
+        ).catch(error => console.log(error));
+    }    
+
+    getAnUndefineArtist(artistname) {
+        const rp = require('request-promise');
+        const options = {
+            url: 'https://api.spotify.com/v1/search?q=' + artistname.name + '&type=artist',
+            headers: { Authorization: 'Bearer ' + 'BQAPWBcHj5KG33L-Qo5vjRPq9HYNpzUWuarUCpFr3v1mQAwmMusKJT5F14NPIN0OFnpt0DhuIIk7kTWJjN9BEjrOBiKeCbnbwWXfifecfUiuvoRO9HShdD-nqqB5cDPivZzgvgqpLP3jTjv9dv4Mx-t0saHEgODfNay7CNETQGDxJjpFRA' },
+            json: true,
+        };
+        rp.get(options).then((respose) => {
+            artistname.id = (respose.artists.items[0].id); 
+            console.log(artistname);
+        }).catch(error => console.log(error));
     }
 }
 
