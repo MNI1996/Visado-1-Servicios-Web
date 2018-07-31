@@ -1,28 +1,36 @@
 class Album{
-    constructor(aName, aYear){
-        this.name = aName;
-        this.year = aYear;
-        this.trackList = [];
+    constructor(name, year){
+        this.name = name;
+        this.year = year;
+        this.tracklist = [];
     }
-    
+
     getName(){
         return this.name;
     }
-    getyear(){
+
+    setName(name){
+        this.name = name;
+    }
+
+    getYear(){
         return this.year;
     }
-    
-    addTrack(aTrack){
-        this.trackList.push(aTrack);
+
+    setYear(year){
+        this.year = year;
     }
-    
+
     getTracks(){
-        return this.trackList;
+        return this.tracklist;
+    }
+
+    setTracks(tracklist){
+        this.tracklist = tracklist;
+    }
+
+    addTrack(track){
+        this.tracklist.push(track);
     }
 }
-
-
-// TODO: exportar todas las clases que necesiten ser utilizadas desde un modulo cliente
-module.exports = {
-  Album
-};
+module.exports = {Album};

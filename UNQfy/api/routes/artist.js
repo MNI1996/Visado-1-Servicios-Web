@@ -1,75 +1,80 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
-var id = 1;
+const Artist = require('../models/artist');
 
-//GET all  
-router.get('/', (req, res, next) => {
-    //select * from tabla
-    res.status(200).json({
-        message : 'all artist in system'
+
+//POST body{"name":"", "country": ""}
+router.post('/', (req, res, next) =>{
+    const name = req.body.name 
+    const newArtist = new Artist({
+        _id: new mongoose.Types.ObjectId(),
+        name: name.toLowerCase(),
+        country: req.body.country,
+        albums: []
+    })
+    newArtist.save()
+    .then(result => {
+        res.status(200).json({
+            message: 'a new artist has been added',
+            object: newArtist
+        });
+    })
+    .catch(err => {
+        res.status(500).json({
+            error : err
+        });
+    });
+
+});
+
+router.get('/findById=:artistId', (req, res, next) =>{
+    const paramId = req.params.artistId;
+    Artist.findById(paramId)
+    .exec()
+    .then(doc => {
+        if(doc){
+            res.status(200).json(doc);
+        }
+        else{
+            res.status(404).json({
+                message : 'no valid entry found for provided ID',
+            });
+        }
+    })
+    .catch(err =>{ 
+        res.status(500).json({error: err});
+    });
+
+});
+
+router.get('/findByName=:name', (req,res,next) => {
+    const param = (req.params.name)//.toLowerCase();
+    var query = Artist.find({"name":{ $regex:'.*'}});
+    //var query = Artist.find();
+    query.exec(function(err, result){
+        if(err) {res.status(500).json({estado: 'falla'});}
+        res.status(200).json({resultado: result});
     });
 });
-//POST DE UN ARTISTA 
-router.post('/', (req, res, next) => {
-    //select
-    //if (el artista esta en la base de datos){
-    //  res.status(409).json({errorCode : "RESOURCE_ALREADY_EXISTS"});
-    //}
-    //else{
-    //insert
-    const artist = {
-        id : id,
-        name : req.body.name,
-        country : req.body.country,
-        albums : []//deberia llamar a populate album
-    };
-    res.status(201).json({
-        message : 'the artist was add',
-        attechedArtist: artist
-    }); 
-    id = id +1; // la id de los artistas 
-    //}
-});
 
-//GET de un artista por id
-router.get('/:artistId',(req, res, next)=>{
+router.delete('/:artistId', (req, res, next) =>{
     const id = req.params.artistId;
-    // select * from table
-    /*if (la respuesta de la query es vacia){
-        res.status(404).json({errorCode : "errorCode: "RESOURCE_NOT_FOUND""});
-    }
-    */
+    Artist.remove({_id : id})
+    .exec()
+    .then(result => {
         res.status(200).json({
-            message : 'toma el parametro id',
-            //el objeto obtenido por la consulta
+            message: 'the artist with that id has been deleted'
         });
-    //}
+    })
+    .catch(err => {
+        res.status(500).json({
+            error: err
+        })
+    });
 });
 
-//GET los artistas que machean por proximidad con el nombre parametro
-router.get('/name:artistName',(req, res, next)=>{
-    const id = req.params.artistName;
-    //select * 
-    if (true){
-        res.status(200).json({
-            message : 'toma el parametro id',
-            name : id
-        });
-    }
-});
 
-//DELETE el artista con el id pasado por parametro
-router.delete('/:artistId',(req, res, next)=>{
-    const id = req.params.artistId;
-    //select * from table
-        /*if (la respuesta de la query es vacia){
-        res.status(404).json({errorCode : "errorCode: "RESOURCE_NOT_FOUND""});
-    }
-    */
-        //delete * from table where id = id
-        res.status(200)
-    //}
-});
 
 module.exports = router;

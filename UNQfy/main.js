@@ -239,12 +239,12 @@ function main() {
   case 'populateAlbumsForArtist':
     runCommand(a => {
       let artist = unqfy.getArtistByName(a.name);
-      console.log(unqfy.populateAlbumsForArtist(artist))
+      console.log(unqfy.populateAlbumsForArtist(artist));
     }, ['name'], args);
     break;
 
   case 'fast':
-    runCommand(a => {unqfy.generateURLTrack(a.name)}, ['name'], args);
+    runCommand(a => {unqfy.generateURLTrack(a.name);}, ['name'], args);
     break;
 
   case 'addArtist':
@@ -308,15 +308,16 @@ function main() {
       console.log('no hay playlist registradas.');
     }
     break;
-  case 'listTrack':
+/*
+  case 'listTrack':  
     const tracks = unqfy.listTracks();
-    if( isNotEmpty(tracks)) {
+    if(isNotEmpty(tracks)) {
       console.log(`Tracks (${tracks.length}):\n`);
       tracks.forEach(t => console.log(`Nombre: ${t.name} Duracion: ${t.duration}`));
     } else {
       console.log('No hay tracks registrados.');
     }
-    break;
+    break;*/
   case 'listTrackByAlbum':
     runCommand(a => {
       const album = unqfy.getAlbumByName(a.name);
@@ -414,16 +415,16 @@ function main() {
     }, ['name'], args);
     break;
 
-    case 'searchArtist':
+  case 'searchArtist':
     runCommand(a => {
       const artist = unqfy.getArtistByName(a.name);
-        if(isNotUndefined(artist)){
-          console.log(`Nombre: ${a.name}`);
-          return '\n';
-        } else{
-          let newArtist = new Artist(a.name, "");
-          unqfy.getAnUndefineArtist(artist);
-        }
+      if(isNotUndefined(artist)){
+        console.log(`Nombre: ${a.name}`);
+        return '\n';
+      } else{
+        //let newArtist = new Artist(a.name, "");
+        unqfy.getAnUndefineArtist(artist);
+      }
     }, ['name'], args);
     break;
   case 'searchPlaylist':

@@ -1,0 +1,31 @@
+{
+  "name": "notify",
+  "version": "1.0.0",
+  "main": "service.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.3",
+    "mongoose": "^5.2.5",
+    "morgan": "^1.9.0",
+    "neo4j-driver": "^1.5.0",
+    "nodemailer": "^4.6.7",
+    "picklejs": "0.0.0",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  },
+  "keywords": [
+    "node",
+    "restful",
+    "api"
+  ],
+  "description": ""
+}
